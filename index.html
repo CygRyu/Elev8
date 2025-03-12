@@ -320,7 +320,7 @@
         <!-- Footer -->
         <footer class="mt-auto py-4 bg-gray-100 dark:bg-dark-card border-t border-gray-200 dark:border-dark-border">
             <div class="container mx-auto px-4 text-center text-sm text-gray-600 dark:text-gray-400">
-                <p>Developed by CygRyu &copy; 2025 Elev8 Insurance Contact Tracker</p>
+                <p>Developed by CygRyu &copy; 2023 Elev8 Insurance Contact Tracker</p>
             </div>
         </footer>
 
@@ -393,22 +393,20 @@
                                 
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div>
-                                        <label for="insuranceInterest" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Insurance Types Interested</label>
-                                        <select id="insuranceInterest" multiple
+                                        <label for="insuranceInterest" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Insurance Type Interested</label>
+                                        <select id="insuranceInterest" 
                                                 class="w-full px-3 py-2 bg-white dark:bg-dark-bg border border-gray-300 dark:border-dark-border rounded-md text-base focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary">
+                                            <option value="">Select Insurance Type</option>
                                             <option value="Life">Life</option>
                                             <option value="Health">Health</option>
                                             <option value="Critical Illness">Critical Illness</option>
+                                            <option value="Auto">Auto</option>
+                                            <option value="Home">Home</option>
+                                            <option value="Business">Business</option>
+                                            <option value="Travel">Travel</option>
+                                            <option value="Disability">Disability</option>
+                                            <option value="Other">Other</option>
                                         </select>
-                                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Hold Ctrl/Cmd to select multiple</p>
-                                        <div class="flex mt-2">
-                                            <input type="text" id="customInsuranceType" placeholder="Add custom insurance type" 
-                                                class="flex-grow px-3 py-2 bg-white dark:bg-dark-bg border border-gray-300 dark:border-dark-border rounded-l-md text-base focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary">
-                                            <button type="button" id="addCustomInsuranceBtn" 
-                                                class="bg-primary hover:bg-secondary text-white px-3 py-2 rounded-r-md transition-colors">
-                                                Add
-                                            </button>
-                                        </div>
                                     </div>
                                     
                                     <div>
@@ -551,7 +549,7 @@
                             
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-2">
                                 <div>
-                                    <p class="text-sm font-medium text-gray-700 dark:text-gray-300">Insurance Types Interested</p>
+                                    <p class="text-sm font-medium text-gray-700 dark:text-gray-300">Insurance Type Interested</p>
                                     <p id="viewInsuranceInterest" class="text-base text-gray-900 dark:text-gray-100"></p>
                                 </div>
                                 
@@ -700,12 +698,12 @@
                     fullName: 'John Smith',
                     email: 'john.smith@example.com',
                     phone: '555-123-4567',
-                    nextAppointment: '2025-04-10T10:00',
+                    nextAppointment: '2023-09-25T10:00',
                     address: '123 Main St, Anytown',
                     source: 'Website',
                     status: 'New Lead',
                     notes: 'Interested in home insurance after recent move',
-                    insuranceInterest: ['Life', 'Health'],
+                    insuranceInterest: 'Life',
                     objections: 'Concerned about premium costs'
                 },
                 {
@@ -714,12 +712,12 @@
                     fullName: 'Sarah Johnson',
                     email: 'sarah.j@example.com',
                     phone: '555-987-6543',
-                    nextAppointment: '2025-04-27T14:30',
+                    nextAppointment: '2023-09-27T14:30',
                     address: '456 Oak Ave, Othertown',
                     source: 'Referral',
                     status: 'Qualified',
                     notes: 'Looking for comprehensive coverage',
-                    insuranceInterest: ['Life', 'Critical Illness'],
+                    insuranceInterest: 'Critical Illness',
                     objections: 'Comparing multiple providers'
                 },
                 {
@@ -728,7 +726,7 @@
                     fullName: 'Michael Wilson',
                     email: 'michael.w@example.com',
                     phone: '555-456-7890',
-                    nextAppointment: '2025-04-26T11:15',
+                    nextAppointment: '2023-09-26T11:15',
                     address: '789 Pine Rd, Somewhere',
                     source: 'LinkedIn',
                     status: 'Interview Scheduled',
@@ -743,7 +741,7 @@
                     fullName: 'Lisa Brown',
                     email: 'lisa.b@example.com',
                     phone: '555-789-0123',
-                    nextAppointment: '2025-04-28T15:00',
+                    nextAppointment: '2023-09-28T15:00',
                     address: '321 Maple Dr, Elsewhere',
                     source: 'Industry Event',
                     status: 'In Training',
@@ -783,61 +781,6 @@
             
             const customerFields = document.getElementById('customerFields');
             const agentFields = document.getElementById('agentFields');
-
-            const multiSelectFields = document.querySelectorAll('select[multiple]');
-            multiSelectFields.forEach(field => {
-                field.addEventListener('mousedown', (e) => {
-                    e.preventDefault();
-                    const option = e.target.closest('option');
-                    if (!option) return;
-                    
-                    if (option.selected) {
-                        option.selected = false;
-                    } else {
-                        option.selected = true;
-                    }
-                });
-            });
-            
-            // Add custom insurance type
-            const addCustomInsuranceBtn = document.getElementById('addCustomInsuranceBtn');
-            const customInsuranceType = document.getElementById('customInsuranceType');
-            const insuranceInterest = document.getElementById('insuranceInterest');
-            
-            addCustomInsuranceBtn.addEventListener('click', () => {
-                const customType = customInsuranceType.value.trim();
-                if (customType) {
-                    // Check if the custom type already exists
-                    let exists = false;
-                    for (let i = 0; i < insuranceInterest.options.length; i++) {
-                        if (insuranceInterest.options[i].value === customType) {
-                            exists = true;
-                            insuranceInterest.options[i].selected = true;
-                            break;
-                        }
-                    }
-                    
-                    // Add new option if it doesn't exist
-                    if (!exists) {
-                        const option = document.createElement('option');
-                        option.value = customType;
-                        option.text = customType;
-                        option.selected = true;
-                        insuranceInterest.add(option);
-                    }
-                    
-                    // Clear the input field
-                    customInsuranceType.value = '';
-                }
-            });
-            
-            // Allow adding custom insurance type with Enter key
-            customInsuranceType.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    addCustomInsuranceBtn.click();
-                }
-            });
             
             // Show tab
             function showTab(tabId) {
@@ -1030,7 +973,7 @@
                             <div class="text-sm text-gray-500 dark:text-gray-400">${contact.phone}</div>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="text-sm text-gray-900 dark:text-gray-100">${Array.isArray(contact.insuranceInterest) ? contact.insuranceInterest.join(', ') : contact.insuranceInterest || 'N/A'}</div>
+                            <div class="text-sm text-gray-900 dark:text-gray-100">${contact.insuranceInterest || 'N/A'}</div>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             <div class="text-gray-900 dark:text-gray-100">${formatDate(contact.nextAppointment)}</div>
@@ -1186,7 +1129,7 @@
                     viewAgentFields.classList.add('hidden');
                     
                     // Set customer specific information
-                    document.getElementById('viewInsuranceInterest').textContent = Array.isArray(contact.insuranceInterest) ? contact.insuranceInterest.join(', ') : contact.insuranceInterest || 'N/A';
+                    document.getElementById('viewInsuranceInterest').textContent = contact.insuranceInterest || 'N/A';
                     document.getElementById('viewCustomerStatus').textContent = contact.status || 'N/A';
                     document.getElementById('viewObjections').textContent = contact.objections || 'N/A';
                 } else {
@@ -1269,30 +1212,8 @@
                     customerFields.classList.remove('hidden');
                     agentFields.classList.add('hidden');
                     
-                    // Customer specific fields
-                    if (Array.isArray(contact.insuranceInterest)) {
-                        // Clear existing custom options first
-                        const selectElement = document.getElementById('insuranceInterest');
-                        while (selectElement.options.length > 3) {
-                            selectElement.remove(3);
-                        }
-                        
-                        // Add any custom insurance types from the contact
-                        contact.insuranceInterest.forEach(type => {
-                            if (!['Life', 'Health', 'Critical Illness'].includes(type)) {
-                                const option = document.createElement('option');
-                                option.value = type;
-                                option.text = type;
-                                selectElement.add(option);
-                            }
-                        });
-                        
-                        // Now select all appropriate options
-                        for (let i = 0; i < selectElement.options.length; i++) {
-                            selectElement.options[i].selected = contact.insuranceInterest.includes(selectElement.options[i].value);
-                        }
-                    }
-                    
+                    // Set insurance interest dropdown value
+                    document.getElementById('insuranceInterest').value = contact.insuranceInterest || '';
                     document.getElementById('objections').value = contact.objections || '';
                     document.getElementById('customerStatus').value = contact.status || 'New Lead';
                 } else {
@@ -1345,9 +1266,8 @@
                 
                 // Add type-specific fields
                 if (type === 'customer') {
-                    // Get insurance interest (multi-select)
-                    const insuranceSelect = document.getElementById('insuranceInterest');
-                    const insuranceInterest = Array.from(insuranceSelect.selectedOptions).map(option => option.value);
+                    // Get insurance interest (single select)
+                    const insuranceInterest = document.getElementById('insuranceInterest').value;
                     
                     contact.insuranceInterest = insuranceInterest;
                     contact.objections = document.getElementById('objections').value;

@@ -1,0 +1,1563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Elev8 - Insurance Contact Tracker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#5D5CDE',
+                        secondary: '#4F4DC7',
+                        success: '#34D399',
+                        danger: '#EF4444',
+                        warning: '#F59E0B',
+                        info: '#3B82F6',
+                        dark: {
+                            bg: '#181818',
+                            card: '#222222',
+                            border: '#333333'
+                        }
+                    }
+                }
+            }
+        };
+
+        // Check for dark mode preference
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            document.documentElement.classList.add('dark');
+        }
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
+            if (event.matches) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+        });
+    </script>
+    <style>
+        /* Additional custom styles */
+        .fade-in {
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .slide-in {
+            animation: slideIn 0.3s ease-in-out;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateY(-10px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        /* Show scrollbar only when hovering */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background-color: rgba(93, 92, 222, 0.3);
+            border-radius: 3px;
+        }
+        
+        .dark .custom-scrollbar::-webkit-scrollbar-thumb {
+            background-color: rgba(93, 92, 222, 0.5);
+        }
+        
+        .custom-scrollbar:hover::-webkit-scrollbar-thumb {
+            background-color: rgba(93, 92, 222, 0.7);
+        }
+        
+        .dark .custom-scrollbar:hover::-webkit-scrollbar-thumb {
+            background-color: rgba(93, 92, 222, 0.8);
+        }
+    </style>
+</head>
+<body class="bg-white dark:bg-dark-bg text-gray-800 dark:text-gray-200 transition-colors duration-200">
+    <div class="min-h-screen flex flex-col">
+        <!-- Header -->
+        <header class="bg-primary text-white shadow-md">
+            <div class="container mx-auto px-4 py-3 flex flex-wrap items-center justify-between">
+                <div class="flex items-center">
+                    <h1 class="text-2xl font-bold mr-2">Elev8</h1>
+                    <span class="text-xs bg-white/20 px-2 py-1 rounded">Contact Tracker</span>
+                </div>
+                <div class="flex items-center space-x-2 mt-2 sm:mt-0">
+                    <button id="importExportBtn" class="text-sm px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded-md transition-colors">
+                        <span class="hidden sm:inline">Import/Export</span>
+                        <span class="sm:hidden">💾</span>
+                    </button>
+                    <div class="relative group">
+                        <button id="supportBtn" class="text-sm px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded-md transition-colors">
+                            <span class="hidden sm:inline">Support</span>
+                            <span class="sm:hidden">❤️</span>
+                        </button>
+                        <div id="supportDropdown" class="absolute right-0 mt-2 w-48 bg-white dark:bg-dark-card shadow-lg rounded-md hidden z-10 group-focus-within:block">
+                            <div class="p-2 text-sm text-gray-800 dark:text-gray-300 border-b border-gray-200 dark:border-dark-border">
+                                Support the Developer
+                            </div>
+                            <a href="https://ko-fi.com/cygryu" target="_blank" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-border">
+                                Ko-Fi
+                            </a>
+                            <a href="https://www.paypal.com/paypalme/sofiansu?country.x=ID&locale.x=en_US" target="_blank" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-border">
+                                PayPal
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="flex-grow container mx-auto px-4 py-6">
+            <!-- Tabs -->
+            <div class="mb-6 border-b border-gray-200 dark:border-dark-border">
+                <ul class="flex flex-wrap -mb-px text-sm font-medium" id="contactTabs" role="tablist">
+                    <li class="mr-2" role="presentation">
+                        <button class="inline-block py-3 px-4 border-b-2 border-primary text-primary hover:text-primary-hover" 
+                                id="dashboard-tab" 
+                                data-tab="dashboard" 
+                                type="button">
+                            Dashboard
+                        </button>
+                    </li>
+                    <li class="mr-2" role="presentation">
+                        <button class="inline-block py-3 px-4 border-b-2 border-transparent hover:border-gray-300 dark:hover:border-gray-600" 
+                                id="customer-tab" 
+                                data-tab="customer" 
+                                type="button">
+                            Customer Prospects
+                        </button>
+                    </li>
+                    <li class="mr-2" role="presentation">
+                        <button class="inline-block py-3 px-4 border-b-2 border-transparent hover:border-gray-300 dark:hover:border-gray-600" 
+                                id="agent-tab" 
+                                data-tab="agent" 
+                                type="button">
+                            Agent Prospects
+                        </button>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Dashboard -->
+            <div id="dashboard-content" class="tab-content active">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                    <!-- Dashboard Cards -->
+                    <div class="bg-white dark:bg-dark-card p-4 rounded-lg shadow-sm border border-gray-200 dark:border-dark-border">
+                        <h3 class="text-gray-500 dark:text-gray-400 text-sm font-medium mb-1">Total Contacts</h3>
+                        <p class="text-2xl font-bold" id="totalContactsCount">0</p>
+                    </div>
+                    <div class="bg-white dark:bg-dark-card p-4 rounded-lg shadow-sm border border-gray-200 dark:border-dark-border">
+                        <h3 class="text-gray-500 dark:text-gray-400 text-sm font-medium mb-1">Customer Prospects</h3>
+                        <p class="text-2xl font-bold" id="customerContactsCount">0</p>
+                    </div>
+                    <div class="bg-white dark:bg-dark-card p-4 rounded-lg shadow-sm border border-gray-200 dark:border-dark-border">
+                        <h3 class="text-gray-500 dark:text-gray-400 text-sm font-medium mb-1">Agent Prospects</h3>
+                        <p class="text-2xl font-bold" id="agentContactsCount">0</p>
+                    </div>
+                    <div class="bg-white dark:bg-dark-card p-4 rounded-lg shadow-sm border border-gray-200 dark:border-dark-border">
+                        <h3 class="text-gray-500 dark:text-gray-400 text-sm font-medium mb-1">Upcoming Appointments</h3>
+                        <p class="text-2xl font-bold" id="upcomingAppointmentsCount">0</p>
+                    </div>
+                </div>
+
+                <h2 class="text-xl font-semibold mb-4">Upcoming Appointments</h2>
+                <div class="bg-white dark:bg-dark-card rounded-lg shadow-sm border border-gray-200 dark:border-dark-border overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200 dark:divide-dark-border">
+                            <thead class="bg-gray-50 dark:bg-dark-card">
+                                <tr>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                        Name
+                                    </th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                        Type
+                                    </th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                        Appointment
+                                    </th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                        Status
+                                    </th>
+                                    <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                        Actions
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody id="upcomingAppointmentsTable" class="bg-white dark:bg-dark-card divide-y divide-gray-200 dark:divide-dark-border">
+                                <!-- Dynamically populated -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Customer Prospects Tab -->
+            <div id="customer-content" class="tab-content hidden">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-xl font-semibold">Customer Prospects</h2>
+                    <button id="addCustomerBtn" class="bg-primary hover:bg-secondary text-white text-sm font-medium py-2 px-4 rounded transition-colors">
+                        Add Customer
+                    </button>
+                </div>
+                
+                <div class="bg-white dark:bg-dark-card rounded-lg shadow-sm border border-gray-200 dark:border-dark-border overflow-hidden mb-4">
+                    <div class="p-4 border-b border-gray-200 dark:border-dark-border">
+                        <div class="flex flex-wrap gap-2">
+                            <input type="text" id="customerSearchInput" placeholder="Search..." 
+                                   class="px-3 py-2 bg-gray-50 dark:bg-dark-bg border border-gray-300 dark:border-dark-border rounded-md text-base focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary">
+                            
+                            <select id="customerStatusFilter" class="px-3 py-2 bg-gray-50 dark:bg-dark-bg border border-gray-300 dark:border-dark-border rounded-md text-base focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary">
+                                <option value="">All Statuses</option>
+                                <option value="New Lead">New Lead</option>
+                                <option value="In Progress">In Progress</option>
+                                <option value="Qualified">Qualified</option>
+                                <option value="Proposal">Proposal</option>
+                                <option value="Closed Won">Closed Won</option>
+                                <option value="Closed Lost">Closed Lost</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200 dark:divide-dark-border">
+                            <thead class="bg-gray-50 dark:bg-dark-card">
+                                <tr>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                        Name
+                                    </th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                        Insurance Interest
+                                    </th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                        Next Appointment
+                                    </th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                        Status
+                                    </th>
+                                    <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                        Actions
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody id="customerTable" class="bg-white dark:bg-dark-card divide-y divide-gray-200 dark:divide-dark-border">
+                                <!-- Dynamically populated -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Agent Prospects Tab -->
+            <div id="agent-content" class="tab-content hidden">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-xl font-semibold">Agent Prospects</h2>
+                    <button id="addAgentBtn" class="bg-primary hover:bg-secondary text-white text-sm font-medium py-2 px-4 rounded transition-colors">
+                        Add Agent
+                    </button>
+                </div>
+                
+                <div class="bg-white dark:bg-dark-card rounded-lg shadow-sm border border-gray-200 dark:border-dark-border overflow-hidden mb-4">
+                    <div class="p-4 border-b border-gray-200 dark:border-dark-border">
+                        <div class="flex flex-wrap gap-2">
+                            <input type="text" id="agentSearchInput" placeholder="Search..." 
+                                   class="px-3 py-2 bg-gray-50 dark:bg-dark-bg border border-gray-300 dark:border-dark-border rounded-md text-base focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary">
+                            
+                            <select id="agentStatusFilter" class="px-3 py-2 bg-gray-50 dark:bg-dark-bg border border-gray-300 dark:border-dark-border rounded-md text-base focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary">
+                                <option value="">All Statuses</option>
+                                <option value="Initial Contact">Initial Contact</option>
+                                <option value="Interview Scheduled">Interview Scheduled</option>
+                                <option value="In Training">In Training</option>
+                                <option value="License Pending">License Pending</option>
+                                <option value="Active">Active</option>
+                                <option value="Inactive">Inactive</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200 dark:divide-dark-border">
+                            <thead class="bg-gray-50 dark:bg-dark-card">
+                                <tr>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                        Name
+                                    </th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                        Experience
+                                    </th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                        Next Appointment
+                                    </th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                        Status
+                                    </th>
+                                    <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                        Actions
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody id="agentTable" class="bg-white dark:bg-dark-card divide-y divide-gray-200 dark:divide-dark-border">
+                                <!-- Dynamically populated -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="mt-auto py-4 bg-gray-100 dark:bg-dark-card border-t border-gray-200 dark:border-dark-border">
+            <div class="container mx-auto px-4 text-center text-sm text-gray-600 dark:text-gray-400">
+                <p>Developed by CygRyu &copy; 2025 Elev8 Insurance Contact Tracker</p>
+            </div>
+        </footer>
+
+        <!-- Modal for Adding/Editing Contacts -->
+        <div id="contactModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+            <div class="bg-white dark:bg-dark-card rounded-lg shadow-xl w-full max-w-2xl mx-4 max-h-[90vh] flex flex-col">
+                <div class="p-4 border-b border-gray-200 dark:border-dark-border flex justify-between items-center">
+                    <h2 id="modalTitle" class="text-lg font-semibold">Add Contact</h2>
+                    <button id="closeModalBtn" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+                
+                <div class="overflow-y-auto custom-scrollbar p-4 flex-grow">
+                    <form id="contactForm">
+                        <input type="hidden" id="contactId">
+                        <input type="hidden" id="contactType">
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                            <!-- Common Fields -->
+                            <div class="col-span-2">
+                                <h3 class="text-md font-medium mb-2 pb-1 border-b border-gray-200 dark:border-dark-border">
+                                    Basic Information
+                                </h3>
+                            </div>
+                            
+                            <div>
+                                <label for="fullName" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Full Name *</label>
+                                <input type="text" id="fullName" required 
+                                       class="w-full px-3 py-2 bg-white dark:bg-dark-bg border border-gray-300 dark:border-dark-border rounded-md text-base focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary">
+                            </div>
+                            
+                            <div>
+                                <label for="email" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email</label>
+                                <input type="email" id="email" 
+                                       class="w-full px-3 py-2 bg-white dark:bg-dark-bg border border-gray-300 dark:border-dark-border rounded-md text-base focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary">
+                            </div>
+                            
+                            <div>
+                                <label for="phone" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Phone *</label>
+                                <input type="tel" id="phone" required 
+                                       class="w-full px-3 py-2 bg-white dark:bg-dark-bg border border-gray-300 dark:border-dark-border rounded-md text-base focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary">
+                            </div>
+                            
+                            <div>
+                                <label for="nextAppointment" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Next Appointment *</label>
+                                <input type="datetime-local" id="nextAppointment" required 
+                                       class="w-full px-3 py-2 bg-white dark:bg-dark-bg border border-gray-300 dark:border-dark-border rounded-md text-base focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary">
+                            </div>
+                            
+                            <div>
+                                <label for="address" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Address</label>
+                                <input type="text" id="address" 
+                                       class="w-full px-3 py-2 bg-white dark:bg-dark-bg border border-gray-300 dark:border-dark-border rounded-md text-base focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary">
+                            </div>
+                            
+                            <div>
+                                <label for="source" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Source/Referral</label>
+                                <input type="text" id="source" 
+                                       class="w-full px-3 py-2 bg-white dark:bg-dark-bg border border-gray-300 dark:border-dark-border rounded-md text-base focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary">
+                            </div>
+                            
+                            <!-- Customer-specific fields -->
+                            <div id="customerFields" class="col-span-2 mt-2">
+                                <h3 class="text-md font-medium mb-2 pb-1 border-b border-gray-200 dark:border-dark-border">
+                                    Customer Prospect Information
+                                </h3>
+                                
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label for="insuranceInterest" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Insurance Types Interested</label>
+                                        <select id="insuranceInterest" multiple
+                                                class="w-full px-3 py-2 bg-white dark:bg-dark-bg border border-gray-300 dark:border-dark-border rounded-md text-base focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary">
+                                            <option value="Life">Life</option>
+                                            <option value="Health">Health</option>
+                                            <option value="Critical Illness">Critical Illness</option>
+                                        </select>
+                                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Hold Ctrl/Cmd to select multiple</p>
+                                        <div class="flex mt-2">
+                                            <input type="text" id="customInsuranceType" placeholder="Add custom insurance type" 
+                                                class="flex-grow px-3 py-2 bg-white dark:bg-dark-bg border border-gray-300 dark:border-dark-border rounded-l-md text-base focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary">
+                                            <button type="button" id="addCustomInsuranceBtn" 
+                                                class="bg-primary hover:bg-secondary text-white px-3 py-2 rounded-r-md transition-colors">
+                                                Add
+                                            </button>
+                                        </div>
+                                    </div>
+                                    
+                                    <div>
+                                        <label for="customerStatus" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Status *</label>
+                                        <select id="customerStatus" required 
+                                                class="w-full px-3 py-2 bg-white dark:bg-dark-bg border border-gray-300 dark:border-dark-border rounded-md text-base focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary">
+                                            <option value="New Lead">New Lead</option>
+                                            <option value="In Progress">In Progress</option>
+                                            <option value="Qualified">Qualified</option>
+                                            <option value="Proposal">Proposal</option>
+                                            <option value="Closed Won">Closed Won</option>
+                                            <option value="Closed Lost">Closed Lost</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div class="col-span-2">
+                                        <label for="objections" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Objections/Concerns</label>
+                                        <textarea id="objections" rows="2" 
+                                                 class="w-full px-3 py-2 bg-white dark:bg-dark-bg border border-gray-300 dark:border-dark-border rounded-md text-base focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Agent-specific fields -->
+                            <div id="agentFields" class="col-span-2 mt-2 hidden">
+                                <h3 class="text-md font-medium mb-2 pb-1 border-b border-gray-200 dark:border-dark-border">
+                                    Agent Prospect Information
+                                </h3>
+                                
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label for="currentOccupation" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Current Occupation</label>
+                                        <input type="text" id="currentOccupation" 
+                                               class="w-full px-3 py-2 bg-white dark:bg-dark-bg border border-gray-300 dark:border-dark-border rounded-md text-base focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary">
+                                    </div>
+                                    
+                                    <div>
+                                        <label for="yearsExperience" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Years of Experience</label>
+                                        <input type="number" id="yearsExperience" min="0" step="0.5" 
+                                               class="w-full px-3 py-2 bg-white dark:bg-dark-bg border border-gray-300 dark:border-dark-border rounded-md text-base focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary">
+                                    </div>
+                                    
+                                    <div>
+                                        <label for="agentStatus" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Recruitment Status *</label>
+                                        <select id="agentStatus" required 
+                                                class="w-full px-3 py-2 bg-white dark:bg-dark-bg border border-gray-300 dark:border-dark-border rounded-md text-base focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary">
+                                            <option value="Initial Contact">Initial Contact</option>
+                                            <option value="Interview Scheduled">Interview Scheduled</option>
+                                            <option value="In Training">In Training</option>
+                                            <option value="License Pending">License Pending</option>
+                                            <option value="Active">Active</option>
+                                            <option value="Inactive">Inactive</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div class="col-span-2">
+                                        <label for="expertise" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Areas of Expertise</label>
+                                        <textarea id="expertise" rows="2" 
+                                                 class="w-full px-3 py-2 bg-white dark:bg-dark-bg border border-gray-300 dark:border-dark-border rounded-md text-base focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Common Notes field -->
+                            <div class="col-span-2 mt-2">
+                                <label for="notes" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Notes</label>
+                                <textarea id="notes" rows="3" 
+                                         class="w-full px-3 py-2 bg-white dark:bg-dark-bg border border-gray-300 dark:border-dark-border rounded-md text-base focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"></textarea>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                
+                <div class="p-4 border-t border-gray-200 dark:border-dark-border flex justify-end space-x-3">
+                    <button id="cancelBtn" class="px-4 py-2 border border-gray-300 dark:border-dark-border rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-dark-bg hover:bg-gray-50 dark:hover:bg-dark-card focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
+                        Cancel
+                    </button>
+                    <button id="saveContactBtn" class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
+                        Save Contact
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- View Contact Details Modal -->
+        <div id="viewContactModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+            <div class="bg-white dark:bg-dark-card rounded-lg shadow-xl w-full max-w-2xl mx-4 max-h-[90vh] flex flex-col">
+                <div class="p-4 border-b border-gray-200 dark:border-dark-border flex justify-between items-center">
+                    <h2 id="viewModalTitle" class="text-lg font-semibold">Contact Details</h2>
+                    <button id="closeViewModalBtn" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+                
+                <div class="overflow-y-auto custom-scrollbar p-4 flex-grow">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div class="col-span-2">
+                            <h3 class="text-md font-medium mb-2 pb-1 border-b border-gray-200 dark:border-dark-border">
+                                Basic Information
+                            </h3>
+                        </div>
+                        
+                        <div>
+                            <p class="text-sm font-medium text-gray-700 dark:text-gray-300">Full Name</p>
+                            <p id="viewFullName" class="text-base text-gray-900 dark:text-gray-100"></p>
+                        </div>
+                        
+                        <div>
+                            <p class="text-sm font-medium text-gray-700 dark:text-gray-300">Email</p>
+                            <p id="viewEmail" class="text-base text-gray-900 dark:text-gray-100"></p>
+                        </div>
+                        
+                        <div>
+                            <p class="text-sm font-medium text-gray-700 dark:text-gray-300">Phone</p>
+                            <p id="viewPhone" class="text-base text-gray-900 dark:text-gray-100"></p>
+                        </div>
+                        
+                        <div>
+                            <p class="text-sm font-medium text-gray-700 dark:text-gray-300">Next Appointment</p>
+                            <p id="viewNextAppointment" class="text-base text-gray-900 dark:text-gray-100"></p>
+                        </div>
+                        
+                        <div>
+                            <p class="text-sm font-medium text-gray-700 dark:text-gray-300">Address</p>
+                            <p id="viewAddress" class="text-base text-gray-900 dark:text-gray-100"></p>
+                        </div>
+                        
+                        <div>
+                            <p class="text-sm font-medium text-gray-700 dark:text-gray-300">Source/Referral</p>
+                            <p id="viewSource" class="text-base text-gray-900 dark:text-gray-100"></p>
+                        </div>
+                        
+                        <!-- Customer-specific fields -->
+                        <div id="viewCustomerFields" class="col-span-2 mt-2 hidden">
+                            <h3 class="text-md font-medium mb-2 pb-1 border-b border-gray-200 dark:border-dark-border">
+                                Customer Prospect Information
+                            </h3>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-2">
+                                <div>
+                                    <p class="text-sm font-medium text-gray-700 dark:text-gray-300">Insurance Types Interested</p>
+                                    <p id="viewInsuranceInterest" class="text-base text-gray-900 dark:text-gray-100"></p>
+                                </div>
+                                
+                                <div>
+                                    <p class="text-sm font-medium text-gray-700 dark:text-gray-300">Status</p>
+                                    <p id="viewCustomerStatus" class="text-base text-gray-900 dark:text-gray-100"></p>
+                                </div>
+                                
+                                <div class="col-span-2">
+                                    <p class="text-sm font-medium text-gray-700 dark:text-gray-300">Objections/Concerns</p>
+                                    <p id="viewObjections" class="text-base text-gray-900 dark:text-gray-100"></p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Agent-specific fields -->
+                        <div id="viewAgentFields" class="col-span-2 mt-2 hidden">
+                            <h3 class="text-md font-medium mb-2 pb-1 border-b border-gray-200 dark:border-dark-border">
+                                Agent Prospect Information
+                            </h3>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-2">
+                                <div>
+                                    <p class="text-sm font-medium text-gray-700 dark:text-gray-300">Current Occupation</p>
+                                    <p id="viewCurrentOccupation" class="text-base text-gray-900 dark:text-gray-100"></p>
+                                </div>
+                                
+                                <div>
+                                    <p class="text-sm font-medium text-gray-700 dark:text-gray-300">Years of Experience</p>
+                                    <p id="viewYearsExperience" class="text-base text-gray-900 dark:text-gray-100"></p>
+                                </div>
+                                
+                                <div>
+                                    <p class="text-sm font-medium text-gray-700 dark:text-gray-300">Recruitment Status</p>
+                                    <p id="viewAgentStatus" class="text-base text-gray-900 dark:text-gray-100"></p>
+                                </div>
+                                
+                                <div class="col-span-2">
+                                    <p class="text-sm font-medium text-gray-700 dark:text-gray-300">Areas of Expertise</p>
+                                    <p id="viewExpertise" class="text-base text-gray-900 dark:text-gray-100"></p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Notes -->
+                        <div class="col-span-2 mt-2">
+                            <h3 class="text-md font-medium mb-2 pb-1 border-b border-gray-200 dark:border-dark-border">
+                                Notes
+                            </h3>
+                            <p id="viewNotes" class="text-base text-gray-900 dark:text-gray-100"></p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="p-4 border-t border-gray-200 dark:border-dark-border flex justify-end space-x-3">
+                    <button id="editFromViewBtn" class="px-4 py-2 border border-gray-300 dark:border-dark-border rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-dark-bg hover:bg-gray-50 dark:hover:bg-dark-card focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
+                        Edit
+                    </button>
+                    <button id="closeViewBtn" class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
+                        Close
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Import/Export Modal -->
+        <div id="importExportModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+            <div class="bg-white dark:bg-dark-card rounded-lg shadow-xl w-full max-w-2xl mx-4">
+                <div class="p-4 border-b border-gray-200 dark:border-dark-border flex justify-between items-center">
+                    <h2 class="text-lg font-semibold">Import/Export Data</h2>
+                    <button id="closeImportExportBtn" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+                
+                <div class="p-4">
+                    <div class="mb-6">
+                        <h3 class="text-md font-medium mb-2">Export Data</h3>
+                        <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">Copy the text below to save your contact data:</p>
+                        <textarea id="exportData" rows="5" readonly class="w-full px-3 py-2 bg-gray-50 dark:bg-dark-bg border border-gray-300 dark:border-dark-border rounded-md text-sm focus:outline-none"></textarea>
+                        <div class="mt-2 flex justify-end">
+                            <button id="copyExportBtn" class="px-3 py-1.5 text-sm bg-primary text-white rounded hover:bg-secondary transition-colors">
+                                Copy to Clipboard
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h3 class="text-md font-medium mb-2">Import Data</h3>
+                        <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">Paste your saved data here to restore:</p>
+                        <textarea id="importData" rows="5" class="w-full px-3 py-2 bg-white dark:bg-dark-bg border border-gray-300 dark:border-dark-border rounded-md text-base focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"></textarea>
+                        <div class="mt-2 flex justify-between items-center">
+                            <p id="importStatus" class="text-sm"></p>
+                            <button id="importBtn" class="px-3 py-1.5 text-sm bg-primary text-white rounded hover:bg-secondary transition-colors">
+                                Import Data
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="p-4 border-t border-gray-200 dark:border-dark-border text-right">
+                    <button id="closeImportExportBtn2" class="px-4 py-2 border border-gray-300 dark:border-dark-border rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-dark-bg hover:bg-gray-50 dark:hover:bg-dark-card focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
+                        Close
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Delete Confirmation Modal -->
+        <div id="deleteModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+            <div class="bg-white dark:bg-dark-card rounded-lg shadow-xl w-full max-w-md mx-4">
+                <div class="p-4 border-b border-gray-200 dark:border-dark-border">
+                    <h2 class="text-lg font-semibold">Confirm Deletion</h2>
+                </div>
+                
+                <div class="p-4">
+                    <p class="text-gray-700 dark:text-gray-300">Are you sure you want to delete this contact? This action cannot be undone.</p>
+                </div>
+                
+                <div class="p-4 border-t border-gray-200 dark:border-dark-border flex justify-end space-x-3">
+                    <button id="cancelDeleteBtn" class="px-4 py-2 border border-gray-300 dark:border-dark-border rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-dark-bg hover:bg-gray-50 dark:hover:bg-dark-card focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
+                        Cancel
+                    </button>
+                    <button id="confirmDeleteBtn" class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                        Delete
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Data storage
+            let contacts = [];
+            let currentContactId = null;
+            
+            // Sample data
+            const sampleData = [
+                {
+                    id: '1',
+                    type: 'customer',
+                    fullName: 'John Smith',
+                    email: 'john.smith@example.com',
+                    phone: '555-123-4567',
+                    nextAppointment: '2025-04-10T10:00',
+                    address: '123 Main St, Anytown',
+                    source: 'Website',
+                    status: 'New Lead',
+                    notes: 'Interested in home insurance after recent move',
+                    insuranceInterest: ['Life', 'Health'],
+                    objections: 'Concerned about premium costs'
+                },
+                {
+                    id: '2',
+                    type: 'customer',
+                    fullName: 'Sarah Johnson',
+                    email: 'sarah.j@example.com',
+                    phone: '555-987-6543',
+                    nextAppointment: '2025-04-27T14:30',
+                    address: '456 Oak Ave, Othertown',
+                    source: 'Referral',
+                    status: 'Qualified',
+                    notes: 'Looking for comprehensive coverage',
+                    insuranceInterest: ['Life', 'Critical Illness'],
+                    objections: 'Comparing multiple providers'
+                },
+                {
+                    id: '3',
+                    type: 'agent',
+                    fullName: 'Michael Wilson',
+                    email: 'michael.w@example.com',
+                    phone: '555-456-7890',
+                    nextAppointment: '2025-04-26T11:15',
+                    address: '789 Pine Rd, Somewhere',
+                    source: 'LinkedIn',
+                    status: 'Interview Scheduled',
+                    notes: 'Previously worked at State Insurance',
+                    currentOccupation: 'Insurance Sales',
+                    yearsExperience: 3,
+                    expertise: 'Life and Health insurance products'
+                },
+                {
+                    id: '4',
+                    type: 'agent',
+                    fullName: 'Lisa Brown',
+                    email: 'lisa.b@example.com',
+                    phone: '555-789-0123',
+                    nextAppointment: '2025-04-28T15:00',
+                    address: '321 Maple Dr, Elsewhere',
+                    source: 'Industry Event',
+                    status: 'In Training',
+                    notes: 'Very enthusiastic about joining the team',
+                    currentOccupation: 'Financial Advisor',
+                    yearsExperience: 5,
+                    expertise: 'Life insurance and Critical Illness planning'
+                }
+            ];
+            
+            // Initialize with sample data
+            contacts = sampleData;
+            
+            // DOM elements
+            const tabs = document.querySelectorAll('[data-tab]');
+            const tabContents = document.querySelectorAll('.tab-content');
+            
+            const customerTable = document.getElementById('customerTable');
+            const agentTable = document.getElementById('agentTable');
+            const upcomingAppointmentsTable = document.getElementById('upcomingAppointmentsTable');
+            
+            const totalContactsCount = document.getElementById('totalContactsCount');
+            const customerContactsCount = document.getElementById('customerContactsCount');
+            const agentContactsCount = document.getElementById('agentContactsCount');
+            const upcomingAppointmentsCount = document.getElementById('upcomingAppointmentsCount');
+            
+            // Modals
+            const contactModal = document.getElementById('contactModal');
+            const viewContactModal = document.getElementById('viewContactModal');
+            const importExportModal = document.getElementById('importExportModal');
+            const deleteModal = document.getElementById('deleteModal');
+            
+            // Forms and inputs
+            const contactForm = document.getElementById('contactForm');
+            const contactIdInput = document.getElementById('contactId');
+            const contactTypeInput = document.getElementById('contactType');
+            
+            const customerFields = document.getElementById('customerFields');
+            const agentFields = document.getElementById('agentFields');
+
+            const multiSelectFields = document.querySelectorAll('select[multiple]');
+            multiSelectFields.forEach(field => {
+                field.addEventListener('mousedown', (e) => {
+                    e.preventDefault();
+                    const option = e.target.closest('option');
+                    if (!option) return;
+                    
+                    if (option.selected) {
+                        option.selected = false;
+                    } else {
+                        option.selected = true;
+                    }
+                });
+            });
+            
+            // Add custom insurance type
+            const addCustomInsuranceBtn = document.getElementById('addCustomInsuranceBtn');
+            const customInsuranceType = document.getElementById('customInsuranceType');
+            const insuranceInterest = document.getElementById('insuranceInterest');
+            
+            addCustomInsuranceBtn.addEventListener('click', () => {
+                const customType = customInsuranceType.value.trim();
+                if (customType) {
+                    // Check if the custom type already exists
+                    let exists = false;
+                    for (let i = 0; i < insuranceInterest.options.length; i++) {
+                        if (insuranceInterest.options[i].value === customType) {
+                            exists = true;
+                            insuranceInterest.options[i].selected = true;
+                            break;
+                        }
+                    }
+                    
+                    // Add new option if it doesn't exist
+                    if (!exists) {
+                        const option = document.createElement('option');
+                        option.value = customType;
+                        option.text = customType;
+                        option.selected = true;
+                        insuranceInterest.add(option);
+                    }
+                    
+                    // Clear the input field
+                    customInsuranceType.value = '';
+                }
+            });
+            
+            // Allow adding custom insurance type with Enter key
+            customInsuranceType.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    addCustomInsuranceBtn.click();
+                }
+            });
+            
+            // Show tab
+            function showTab(tabId) {
+                // Hide all tabs
+                tabContents.forEach(content => {
+                    content.classList.add('hidden');
+                });
+                
+                // Remove active class from all tab buttons
+                tabs.forEach(tab => {
+                    tab.classList.remove('border-primary', 'text-primary');
+                    tab.classList.add('border-transparent');
+                });
+                
+                // Show the selected tab
+                document.getElementById(`${tabId}-content`).classList.remove('hidden');
+                
+                // Set active class to the clicked tab
+                document.querySelector(`[data-tab="${tabId}"]`).classList.remove('border-transparent');
+                document.querySelector(`[data-tab="${tabId}"]`).classList.add('border-primary', 'text-primary');
+            }
+            
+            // Tab switching
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const tabId = tab.getAttribute('data-tab');
+                    showTab(tabId);
+                });
+            });
+            
+            // Format date for display
+            function formatDate(dateString) {
+                if (!dateString) return '';
+                const date = new Date(dateString);
+                return date.toLocaleString();
+            }
+            
+            // Update dashboard counts
+            function updateCounts() {
+                const customerContacts = contacts.filter(contact => contact.type === 'customer');
+                const agentContacts = contacts.filter(contact => contact.type === 'agent');
+                const upcomingAppointments = contacts.filter(contact => {
+                    const appointmentDate = new Date(contact.nextAppointment);
+                    const now = new Date();
+                    return appointmentDate > now;
+                });
+                
+                totalContactsCount.textContent = contacts.length;
+                customerContactsCount.textContent = customerContacts.length;
+                agentContactsCount.textContent = agentContacts.length;
+                upcomingAppointmentsCount.textContent = upcomingAppointments.length;
+            }
+            
+            // Sort contacts by next appointment date
+            function sortContactsByAppointment(contactsArray) {
+                return [...contactsArray].sort((a, b) => {
+                    const dateA = new Date(a.nextAppointment);
+                    const dateB = new Date(b.nextAppointment);
+                    return dateA - dateB;
+                });
+            }
+            
+            // Render upcoming appointments table
+            function renderUpcomingAppointments() {
+                const now = new Date();
+                const upcomingAppointments = contacts.filter(contact => {
+                    const appointmentDate = new Date(contact.nextAppointment);
+                    return appointmentDate > now;
+                });
+                
+                const sortedAppointments = sortContactsByAppointment(upcomingAppointments);
+                
+                upcomingAppointmentsTable.innerHTML = '';
+                
+                if (sortedAppointments.length === 0) {
+                    upcomingAppointmentsTable.innerHTML = `
+                        <tr>
+                            <td colspan="5" class="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
+                                No upcoming appointments
+                            </td>
+                        </tr>
+                    `;
+                    return;
+                }
+                
+                sortedAppointments.forEach(contact => {
+                    const row = document.createElement('tr');
+                    row.className = 'hover:bg-gray-50 dark:hover:bg-dark-border transition-colors';
+                    
+                    row.innerHTML = `
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="font-medium text-gray-900 dark:text-gray-100">${contact.fullName}</div>
+                            <div class="text-sm text-gray-500 dark:text-gray-400">${contact.phone}</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${contact.type === 'customer' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'}">
+                                ${contact.type === 'customer' ? 'Customer' : 'Agent'}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-gray-900 dark:text-gray-100">${formatDate(contact.nextAppointment)}</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200">
+                                ${contact.status}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            <button class="text-info hover:text-blue-600 mr-2 view-btn" data-id="${contact.id}">
+                                View
+                            </button>
+                            <button class="text-primary hover:text-secondary mr-2 edit-btn" data-id="${contact.id}">
+                                Edit
+                            </button>
+                            <button class="text-red-600 hover:text-red-800 delete-btn" data-id="${contact.id}">
+                                Delete
+                            </button>
+                        </td>
+                    `;
+                    
+                    upcomingAppointmentsTable.appendChild(row);
+                });
+                
+                // Add event listeners for view, edit and delete buttons
+                document.querySelectorAll('#upcomingAppointmentsTable .view-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const contactId = btn.getAttribute('data-id');
+                        viewContact(contactId);
+                    });
+                });
+                
+                document.querySelectorAll('#upcomingAppointmentsTable .edit-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const contactId = btn.getAttribute('data-id');
+                        editContact(contactId);
+                    });
+                });
+                
+                document.querySelectorAll('#upcomingAppointmentsTable .delete-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const contactId = btn.getAttribute('data-id');
+                        showDeleteConfirmation(contactId);
+                    });
+                });
+            }
+            
+            // Filter contacts by search term
+            function filterContacts(contactsArray, searchTerm, statusFilter) {
+                return contactsArray.filter(contact => {
+                    const matchesSearch = searchTerm === '' || 
+                        contact.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                        (contact.email && contact.email.toLowerCase().includes(searchTerm.toLowerCase())) ||
+                        (contact.phone && contact.phone.toLowerCase().includes(searchTerm.toLowerCase()));
+                    
+                    const matchesStatus = statusFilter === '' || contact.status === statusFilter;
+                    
+                    return matchesSearch && matchesStatus;
+                });
+            }
+            
+            // Render customer prospects table
+            function renderCustomerTable() {
+                const searchTerm = document.getElementById('customerSearchInput').value;
+                const statusFilter = document.getElementById('customerStatusFilter').value;
+                
+                const customerContacts = contacts.filter(contact => contact.type === 'customer');
+                const filteredContacts = filterContacts(customerContacts, searchTerm, statusFilter);
+                const sortedContacts = sortContactsByAppointment(filteredContacts);
+                
+                customerTable.innerHTML = '';
+                
+                if (sortedContacts.length === 0) {
+                    customerTable.innerHTML = `
+                        <tr>
+                            <td colspan="5" class="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
+                                No customer prospects found
+                            </td>
+                        </tr>
+                    `;
+                    return;
+                }
+                
+                sortedContacts.forEach(contact => {
+                    const row = document.createElement('tr');
+                    row.className = 'hover:bg-gray-50 dark:hover:bg-dark-border transition-colors';
+                    
+                    row.innerHTML = `
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="font-medium text-gray-900 dark:text-gray-100">${contact.fullName}</div>
+                            <div class="text-sm text-gray-500 dark:text-gray-400">${contact.phone}</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm text-gray-900 dark:text-gray-100">${Array.isArray(contact.insuranceInterest) ? contact.insuranceInterest.join(', ') : contact.insuranceInterest || 'N/A'}</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-gray-900 dark:text-gray-100">${formatDate(contact.nextAppointment)}</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200">
+                                ${contact.status}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            <button class="text-info hover:text-blue-600 mr-2 view-btn" data-id="${contact.id}">
+                                View
+                            </button>
+                            <button class="text-primary hover:text-secondary mr-2 edit-btn" data-id="${contact.id}">
+                                Edit
+                            </button>
+                            <button class="text-red-600 hover:text-red-800 delete-btn" data-id="${contact.id}">
+                                Delete
+                            </button>
+                        </td>
+                    `;
+                    
+                    customerTable.appendChild(row);
+                });
+                
+                // Add event listeners for view, edit and delete buttons
+                document.querySelectorAll('#customerTable .view-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const contactId = btn.getAttribute('data-id');
+                        viewContact(contactId);
+                    });
+                });
+                
+                document.querySelectorAll('#customerTable .edit-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const contactId = btn.getAttribute('data-id');
+                        editContact(contactId);
+                    });
+                });
+                
+                document.querySelectorAll('#customerTable .delete-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const contactId = btn.getAttribute('data-id');
+                        showDeleteConfirmation(contactId);
+                    });
+                });
+            }
+            
+            // Render agent prospects table
+            function renderAgentTable() {
+                const searchTerm = document.getElementById('agentSearchInput').value;
+                const statusFilter = document.getElementById('agentStatusFilter').value;
+                
+                const agentContacts = contacts.filter(contact => contact.type === 'agent');
+                const filteredContacts = filterContacts(agentContacts, searchTerm, statusFilter);
+                const sortedContacts = sortContactsByAppointment(filteredContacts);
+                
+                agentTable.innerHTML = '';
+                
+                if (sortedContacts.length === 0) {
+                    agentTable.innerHTML = `
+                        <tr>
+                            <td colspan="5" class="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
+                                No agent prospects found
+                            </td>
+                        </tr>
+                    `;
+                    return;
+                }
+                
+                sortedContacts.forEach(contact => {
+                    const row = document.createElement('tr');
+                    row.className = 'hover:bg-gray-50 dark:hover:bg-dark-border transition-colors';
+                    
+                    row.innerHTML = `
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="font-medium text-gray-900 dark:text-gray-100">${contact.fullName}</div>
+                            <div class="text-sm text-gray-500 dark:text-gray-400">${contact.phone}</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm text-gray-900 dark:text-gray-100">${contact.yearsExperience} years</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-gray-900 dark:text-gray-100">${formatDate(contact.nextAppointment)}</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200">
+                                ${contact.status}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            <button class="text-info hover:text-blue-600 mr-2 view-btn" data-id="${contact.id}">
+                                View
+                            </button>
+                            <button class="text-primary hover:text-secondary mr-2 edit-btn" data-id="${contact.id}">
+                                Edit
+                            </button>
+                            <button class="text-red-600 hover:text-red-800 delete-btn" data-id="${contact.id}">
+                                Delete
+                            </button>
+                        </td>
+                    `;
+                    
+                    agentTable.appendChild(row);
+                });
+                
+                // Add event listeners for view, edit and delete buttons
+                document.querySelectorAll('#agentTable .view-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const contactId = btn.getAttribute('data-id');
+                        viewContact(contactId);
+                    });
+                });
+                
+                document.querySelectorAll('#agentTable .edit-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const contactId = btn.getAttribute('data-id');
+                        editContact(contactId);
+                    });
+                });
+                
+                document.querySelectorAll('#agentTable .delete-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const contactId = btn.getAttribute('data-id');
+                        showDeleteConfirmation(contactId);
+                    });
+                });
+            }
+            
+            // View contact details
+            function viewContact(contactId) {
+                const contact = contacts.find(c => c.id === contactId);
+                if (!contact) return;
+                
+                const viewModalTitle = document.getElementById('viewModalTitle');
+                viewModalTitle.textContent = contact.type === 'customer' ? 'Customer Prospect Details' : 'Agent Prospect Details';
+                
+                // Set basic information
+                document.getElementById('viewFullName').textContent = contact.fullName || 'N/A';
+                document.getElementById('viewEmail').textContent = contact.email || 'N/A';
+                document.getElementById('viewPhone').textContent = contact.phone || 'N/A';
+                document.getElementById('viewNextAppointment').textContent = formatDate(contact.nextAppointment) || 'N/A';
+                document.getElementById('viewAddress').textContent = contact.address || 'N/A';
+                document.getElementById('viewSource').textContent = contact.source || 'N/A';
+                document.getElementById('viewNotes').textContent = contact.notes || 'N/A';
+                
+                // Show specific fields based on contact type
+                const viewCustomerFields = document.getElementById('viewCustomerFields');
+                const viewAgentFields = document.getElementById('viewAgentFields');
+                
+                if (contact.type === 'customer') {
+                    viewCustomerFields.classList.remove('hidden');
+                    viewAgentFields.classList.add('hidden');
+                    
+                    // Set customer specific information
+                    document.getElementById('viewInsuranceInterest').textContent = Array.isArray(contact.insuranceInterest) ? contact.insuranceInterest.join(', ') : contact.insuranceInterest || 'N/A';
+                    document.getElementById('viewCustomerStatus').textContent = contact.status || 'N/A';
+                    document.getElementById('viewObjections').textContent = contact.objections || 'N/A';
+                } else {
+                    viewCustomerFields.classList.add('hidden');
+                    viewAgentFields.classList.remove('hidden');
+                    
+                    // Set agent specific information
+                    document.getElementById('viewCurrentOccupation').textContent = contact.currentOccupation || 'N/A';
+                    document.getElementById('viewYearsExperience').textContent = (contact.yearsExperience || contact.yearsExperience === 0) ? `${contact.yearsExperience} years` : 'N/A';
+                    document.getElementById('viewAgentStatus').textContent = contact.status || 'N/A';
+                    document.getElementById('viewExpertise').textContent = contact.expertise || 'N/A';
+                }
+                
+                // Store current contact ID for edit button
+                currentContactId = contactId;
+                
+                // Show view modal
+                viewContactModal.classList.remove('hidden');
+            }
+            
+            // Show add contact modal
+            function showAddContactModal(type) {
+                const modalTitle = document.getElementById('modalTitle');
+                modalTitle.textContent = type === 'customer' ? 'Add Customer Prospect' : 'Add Agent Prospect';
+                
+                // Reset form
+                contactForm.reset();
+                contactIdInput.value = '';
+                contactTypeInput.value = type;
+                
+                // Set default appointment date to tomorrow
+                const tomorrow = new Date();
+                tomorrow.setDate(tomorrow.getDate() + 1);
+                tomorrow.setHours(9, 0, 0, 0);
+                
+                document.getElementById('nextAppointment').value = tomorrow.toISOString().slice(0, 16);
+                
+                // Show appropriate fields
+                if (type === 'customer') {
+                    customerFields.classList.remove('hidden');
+                    agentFields.classList.add('hidden');
+                } else {
+                    customerFields.classList.add('hidden');
+                    agentFields.classList.remove('hidden');
+                }
+                
+                // Show modal
+                contactModal.classList.remove('hidden');
+                document.getElementById('fullName').focus();
+            }
+            
+            // Edit contact
+            function editContact(contactId) {
+                currentContactId = contactId;
+                const contact = contacts.find(c => c.id === contactId);
+                
+                if (!contact) return;
+                
+                const modalTitle = document.getElementById('modalTitle');
+                modalTitle.textContent = contact.type === 'customer' ? 'Edit Customer Prospect' : 'Edit Agent Prospect';
+                
+                // Reset form
+                contactForm.reset();
+                
+                // Set form values
+                contactIdInput.value = contact.id;
+                contactTypeInput.value = contact.type;
+                
+                // Common fields
+                document.getElementById('fullName').value = contact.fullName || '';
+                document.getElementById('email').value = contact.email || '';
+                document.getElementById('phone').value = contact.phone || '';
+                document.getElementById('nextAppointment').value = contact.nextAppointment ? new Date(contact.nextAppointment).toISOString().slice(0, 16) : '';
+                document.getElementById('address').value = contact.address || '';
+                document.getElementById('source').value = contact.source || '';
+                document.getElementById('notes').value = contact.notes || '';
+                
+                // Show appropriate fields
+                if (contact.type === 'customer') {
+                    customerFields.classList.remove('hidden');
+                    agentFields.classList.add('hidden');
+                    
+                    // Customer specific fields
+                    if (Array.isArray(contact.insuranceInterest)) {
+                        // Clear existing custom options first
+                        const selectElement = document.getElementById('insuranceInterest');
+                        while (selectElement.options.length > 3) {
+                            selectElement.remove(3);
+                        }
+                        
+                        // Add any custom insurance types from the contact
+                        contact.insuranceInterest.forEach(type => {
+                            if (!['Life', 'Health', 'Critical Illness'].includes(type)) {
+                                const option = document.createElement('option');
+                                option.value = type;
+                                option.text = type;
+                                selectElement.add(option);
+                            }
+                        });
+                        
+                        // Now select all appropriate options
+                        for (let i = 0; i < selectElement.options.length; i++) {
+                            selectElement.options[i].selected = contact.insuranceInterest.includes(selectElement.options[i].value);
+                        }
+                    }
+                    
+                    document.getElementById('objections').value = contact.objections || '';
+                    document.getElementById('customerStatus').value = contact.status || 'New Lead';
+                } else {
+                    customerFields.classList.add('hidden');
+                    agentFields.classList.remove('hidden');
+                    
+                    // Agent specific fields
+                    document.getElementById('currentOccupation').value = contact.currentOccupation || '';
+                    document.getElementById('yearsExperience').value = contact.yearsExperience || '';
+                    document.getElementById('expertise').value = contact.expertise || '';
+                    document.getElementById('agentStatus').value = contact.status || 'Initial Contact';
+                }
+                
+                // Show modal
+                contactModal.classList.remove('hidden');
+                document.getElementById('fullName').focus();
+            }
+            
+            // Save contact
+            function saveContact() {
+                // Get common field values
+                const id = contactIdInput.value || generateId();
+                const type = contactTypeInput.value;
+                const fullName = document.getElementById('fullName').value;
+                const email = document.getElementById('email').value;
+                const phone = document.getElementById('phone').value;
+                const nextAppointment = document.getElementById('nextAppointment').value;
+                const address = document.getElementById('address').value;
+                const source = document.getElementById('source').value;
+                const notes = document.getElementById('notes').value;
+                
+                // Validate required fields
+                if (!fullName || !phone || !nextAppointment) {
+                    alert('Please fill in all required fields.');
+                    return;
+                }
+                
+                // Create contact object
+                const contact = {
+                    id,
+                    type,
+                    fullName,
+                    email,
+                    phone,
+                    nextAppointment,
+                    address,
+                    source,
+                    notes
+                };
+                
+                // Add type-specific fields
+                if (type === 'customer') {
+                    // Get insurance interest (multi-select)
+                    const insuranceSelect = document.getElementById('insuranceInterest');
+                    const insuranceInterest = Array.from(insuranceSelect.selectedOptions).map(option => option.value);
+                    
+                    contact.insuranceInterest = insuranceInterest;
+                    contact.objections = document.getElementById('objections').value;
+                    contact.status = document.getElementById('customerStatus').value;
+                } else {
+                    contact.currentOccupation = document.getElementById('currentOccupation').value;
+                    contact.yearsExperience = document.getElementById('yearsExperience').value;
+                    contact.expertise = document.getElementById('expertise').value;
+                    contact.status = document.getElementById('agentStatus').value;
+                }
+                
+                // Update or add contact
+                const existingIndex = contacts.findIndex(c => c.id === id);
+                if (existingIndex !== -1) {
+                    contacts[existingIndex] = contact;
+                } else {
+                    contacts.push(contact);
+                }
+                
+                // Hide modal
+                contactModal.classList.add('hidden');
+                
+                // Update UI
+                renderTables();
+            }
+            
+            // Show delete confirmation
+            function showDeleteConfirmation(contactId) {
+                currentContactId = contactId;
+                deleteModal.classList.remove('hidden');
+            }
+            
+            // Delete contact
+            function deleteContact() {
+                if (!currentContactId) return;
+                
+                contacts = contacts.filter(contact => contact.id !== currentContactId);
+                
+                // Hide modal
+                deleteModal.classList.add('hidden');
+                
+                // Update UI
+                renderTables();
+                
+                currentContactId = null;
+            }
+            
+            // Generate unique ID
+            function generateId() {
+                return Date.now().toString();
+            }
+            
+            // Render all tables and update counts
+            function renderTables() {
+                renderCustomerTable();
+                renderAgentTable();
+                renderUpcomingAppointments();
+                updateCounts();
+                
+                // Update export data
+                document.getElementById('exportData').value = btoa(JSON.stringify(contacts));
+            }
+            
+            // Event Listeners
+            
+            // Add contact buttons
+            document.getElementById('addCustomerBtn').addEventListener('click', () => {
+                showAddContactModal('customer');
+            });
+            
+            document.getElementById('addAgentBtn').addEventListener('click', () => {
+                showAddContactModal('agent');
+            });
+            
+            // Save contact button
+            document.getElementById('saveContactBtn').addEventListener('click', saveContact);
+            
+            // Cancel button
+            document.getElementById('cancelBtn').addEventListener('click', () => {
+                contactModal.classList.add('hidden');
+            });
+            
+            // Close modal buttons
+            document.getElementById('closeModalBtn').addEventListener('click', () => {
+                contactModal.classList.add('hidden');
+            });
+            
+            // View modal close button
+            document.getElementById('closeViewModalBtn').addEventListener('click', () => {
+                viewContactModal.classList.add('hidden');
+            });
+            
+            // Close view button
+            document.getElementById('closeViewBtn').addEventListener('click', () => {
+                viewContactModal.classList.add('hidden');
+            });
+            
+            // Edit from view button
+            document.getElementById('editFromViewBtn').addEventListener('click', () => {
+                // Hide view modal
+                viewContactModal.classList.add('hidden');
+                
+                // Open edit modal with current contact
+                if (currentContactId) {
+                    editContact(currentContactId);
+                }
+            });
+            
+            // Cancel delete button
+            document.getElementById('cancelDeleteBtn').addEventListener('click', () => {
+                deleteModal.classList.add('hidden');
+            });
+            
+            // Confirm delete button
+            document.getElementById('confirmDeleteBtn').addEventListener('click', deleteContact);
+            
+            // Import/Export button
+            document.getElementById('importExportBtn').addEventListener('click', () => {
+                document.getElementById('exportData').value = btoa(JSON.stringify(contacts));
+                importExportModal.classList.remove('hidden');
+            });
+            
+            // Close import/export modal
+            document.getElementById('closeImportExportBtn').addEventListener('click', () => {
+                importExportModal.classList.add('hidden');
+            });
+            
+            document.getElementById('closeImportExportBtn2').addEventListener('click', () => {
+                importExportModal.classList.add('hidden');
+            });
+            
+            // Copy export data
+            document.getElementById('copyExportBtn').addEventListener('click', () => {
+                const exportData = document.getElementById('exportData');
+                exportData.select();
+                document.execCommand('copy');
+                
+                const copyBtn = document.getElementById('copyExportBtn');
+                const originalText = copyBtn.textContent;
+                copyBtn.textContent = 'Copied!';
+                
+                setTimeout(() => {
+                    copyBtn.textContent = originalText;
+                }, 2000);
+            });
+            
+            // Import data
+            document.getElementById('importBtn').addEventListener('click', () => {
+                const importData = document.getElementById('importData').value;
+                const importStatus = document.getElementById('importStatus');
+                
+                if (!importData) {
+                    importStatus.textContent = 'Please enter data to import.';
+                    importStatus.className = 'text-sm text-red-600 dark:text-red-400';
+                    return;
+                }
+                
+                try {
+                    const decodedData = atob(importData);
+                    const importedContacts = JSON.parse(decodedData);
+                    
+                    if (!Array.isArray(importedContacts)) {
+                        throw new Error('Invalid data format');
+                    }
+                    
+                    contacts = importedContacts;
+                    renderTables();
+                    
+                    importStatus.textContent = 'Data imported successfully!';
+                    importStatus.className = 'text-sm text-green-600 dark:text-green-400';
+                    
+                    // Clear import textarea
+                    document.getElementById('importData').value = '';
+                    
+                    setTimeout(() => {
+                        importStatus.textContent = '';
+                    }, 3000);
+                } catch (error) {
+                    importStatus.textContent = 'Invalid data format. Please check your import data.';
+                    importStatus.className = 'text-sm text-red-600 dark:text-red-400';
+                }
+            });
+            
+            // Search and filter event listeners
+            document.getElementById('customerSearchInput').addEventListener('input', renderCustomerTable);
+            document.getElementById('customerStatusFilter').addEventListener('change', renderCustomerTable);
+            document.getElementById('agentSearchInput').addEventListener('input', renderAgentTable);
+            document.getElementById('agentStatusFilter').addEventListener('change', renderAgentTable);
+            
+            // Support dropdown toggle
+            document.getElementById('supportBtn').addEventListener('mouseenter', () => {
+                document.getElementById('supportDropdown').classList.remove('hidden');
+            });
+            
+            document.getElementById('supportBtn').addEventListener('mouseleave', () => {
+                setTimeout(() => {
+                    if (!document.getElementById('supportDropdown').matches(':hover')) {
+                        document.getElementById('supportDropdown').classList.add('hidden');
+                    }
+                }, 200);
+            });
+            
+            document.getElementById('supportDropdown').addEventListener('mouseleave', () => {
+                document.getElementById('supportDropdown').classList.add('hidden');
+            });
+            
+            // Initialize
+            renderTables();
+            showTab('dashboard');
+        });
+    </script>
+</body>
+</html>
